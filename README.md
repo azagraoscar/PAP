@@ -1,4 +1,4 @@
-# PAP
+# PAP - PL1: Convolución e integrales
 ### Miembros:
   - Alberto Estévez Casarrubios
   - Martín Iglesias Nalerio
