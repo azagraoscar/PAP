@@ -66,17 +66,33 @@ int main(void)
 	//get gpu characteristics
 	cudaDeviceProp prop;
 	cudaGetDeviceProperties(&prop, 0);
+	int teselas[] = {8,64,144,256,1024};
 	int maxBlocksSM = prop.maxBlocksPerMultiProcessor;
 	int maxThreadsBlock = prop.maxThreadsPerBlock;
-	int blocksPerGrid = 0;
+	int threadsToUse = 0;
+	int dimGrid = 0;
 
 	if (maxBlocksSM < ((N + maxThreadsBlock - 1) / maxThreadsBlock))
 	{
-		blocksPerGrid = maxBlocksSM;
+		dimGrid = maxBlocksSM;
 	}
 	else
 	{
-		blocksPerGrid = ((N + maxThreadsBlock - 1) / maxThreadsBlock);
+		dimGrid = ((N + maxThreadsBlock - 1) / maxThreadsBlock);
+	}
+	
+	for (int i = 0; i < sizeof(teselas); i++)
+	{
+		if (teselas[i] == maxThreadsBlock)
+		{
+			threadsToUse = maxThreadsBlock;
+			break;
+		}
+		else if (maxThreadsBlock>teselas[i] && maxThreadsBlock<teselas[i+1])
+		{
+			threadsToUse = teselas[i];
+			break;
+		}
 	}
 
 	//Declare all variables
@@ -104,23 +120,22 @@ int main(void)
 	cudaMemcpy(b_d, b_h, size, cudaMemcpyHostToDevice);
 
 	//call kernel function
-	calcularResultadosParciales << < maxThreadsBlock, maxThreadsBlock >> > (a_d, b_d, result_d, maxThreadsBlock, blocksPerGrid);
+	calcularResultadosParciales << < dimGrid, threadsToUse >> > (a_d, b_d, result_d, threadsToUse, dimGrid);
 
 	// Write GPU results in device memory back to host memory
 	cudaMemcpy(result_h, result_d, sizeof(result_h), cudaMemcpyDeviceToHost);
 
 	//calcular el valor de la integral
 	double resultado = 0;
-	for (int i = 0; i < blocksPerGrid; i++)
+	for (int i = 0; i < dimGrid; i++)
 	{
-		//printf("%f", result_h[i]);
 		resultado += result_h[i];
 	}
 	double f_a = (a / (a * a + 4)) * (sin(1 / a));
 	double f_b = (b / (b * b + 4)) * (sin(1 / b));
 	double resultadoIntegral = ((b - a) / N) * (((f_a + f_b) / 2) + resultado);
 	//print result
-	printf("El resultado de la integral es %f", resultadoIntegral);
+	printf("El resultado de la integral es %f\n\n", resultadoIntegral);
 
 	// Free dynamically−allocated device memory
 	cudaFree(a_d);
