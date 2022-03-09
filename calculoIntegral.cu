@@ -71,15 +71,6 @@ int main(void)
 	int maxThreadsBlock = prop.maxThreadsPerBlock;
 	int threadsToUse = 0;
 	int dimGrid = 0;
-
-	if (maxBlocksSM < ((N + maxThreadsBlock - 1) / maxThreadsBlock))
-	{
-		dimGrid = maxBlocksSM;
-	}
-	else
-	{
-		dimGrid = ((N + maxThreadsBlock - 1) / maxThreadsBlock);
-	}
 	
 	for (int i = 0; i < sizeof(teselas); i++)
 	{
@@ -93,6 +84,15 @@ int main(void)
 			threadsToUse = teselas[i];
 			break;
 		}
+	}
+
+	if (maxBlocksSM < ((N + threadsToUse - 1) / threadsToUse))
+	{
+		dimGrid = maxBlocksSM;
+	}
+	else
+	{
+		dimGrid = ((N + threadsToUse - 1) / threadsToUse);
 	}
 
 	//Declare all variables
