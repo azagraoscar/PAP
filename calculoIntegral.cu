@@ -66,7 +66,7 @@ int main(void)
 	//get gpu characteristics
 	cudaDeviceProp prop;
 	cudaGetDeviceProperties(&prop, 0);
-	int teselas[] = {8,64,144,256,1024};
+	int teselas[] = {16,64,144,256,1024};
 	int maxBlocksSM = prop.maxBlocksPerMultiProcessor;
 	int maxThreadsBlock = prop.maxThreadsPerBlock;
 	int threadsToUse = 0;
